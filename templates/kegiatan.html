@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="display-6 fw-bold">Daftar Kegiatan OSIS</h1>
+    <a href="{{ url_for('tambah_kegiatan') }}" class="btn btn-primary mb-3">+ Tambah Kegiatan</a>
+
+    {% if kegiatan %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Nama Kegiatan</th>
+                    <th>Tanggal</th>
+                    <th>Deskripsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for k in kegiatan %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ k[1] }}</td>
+                    <td>{{ k[2] }}</td>
+                    <td>{{ k[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-warning">Belum ada kegiatan yang ditambahkan.</div>
+    {% endif %}
+</div>
+{% endblock %}
+

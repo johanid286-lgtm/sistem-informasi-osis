@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3 shadow">
+  <div class="container py-5">
+    <h1 class="display-5 fw-bold">Sistem Informasi OSIS</h1>
+    <p class="col-md-8 fs-5">
+      Kelola kegiatan dan anggota OSIS dengan mudah, rapi, dan responsif. 
+      Masuk sebagai admin untuk memulai pengelolaan.
+    </p>
+    <a href="{{ url_for('kegiatan') }}" class="btn btn-warning btn-lg text-dark">Lihat Kegiatan</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Tentang OSIS</h5>
+        <p class="card-text">Organisasi siswa untuk mengembangkan bakat, minat, dan kepemimpinan di sekolah.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Cepat & Sederhana</h5>
+        <p class="card-text">Antarmuka ramah pengguna, CRUD lengkap, dan tampilan responsif untuk perangkat mobile.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

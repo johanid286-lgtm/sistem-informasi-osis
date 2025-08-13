@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manajemen Kegiatan</title>
+</head>
+<body>
+    <h1>Daftar Kegiatan</h1>
+    <a href="{{ url_for('tambah_kegiatan') }}">Tambah Kegiatan</a>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>No</th>
+            <th>Nama</th>
+            <th>Tanggal</th>
+            <th>Deskripsi</th>
+            <th>Aksi</th>  <!-- Kolom aksi untuk tombol hapus -->
+        </tr>
+        {% for i, k in enumerate(kegiatan, start=1) %}
+        <tr>
+            <td>{{ i }}</td>
+            <td>{{ k['nama'] }}</td>
+            <td>{{ k['tanggal'] }}</td>
+            <td>{{ k['deskripsi'] }}</td>
+            <td>
+                <form action="{{ url_for('hapus_kegiatan', id=k['id']) }}" method="POST" onsubmit="return confirm('Yakin ingin hapus kegiatan ini?');">
+                    <button type="submit">Hapus</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tambah Kegiatan</title>
+</head>
+<body>
+    <h1>Tambah Kegiatan</h1>
+    <form method="POST" action="{{ url_for('tambah_kegiatan') }}">
+        <label>Nama Kegiatan:</label>
+        <input type="text" name="nama" required><br>
+
+        <label>Tanggal:</label>
+        <input type="date" name="tanggal" required><br>
+
+        <label>Deskripsi:</label>
+        <textarea name="deskripsi"></textarea><br>
+
+        <button type="submit">Simpan</button>
+    </form>
+</body>
+</html>

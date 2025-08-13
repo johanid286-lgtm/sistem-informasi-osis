@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2>Dashboard Admin</h2>
+  <a class="btn btn-outline-dark" href="/logout">Logout</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Manajemen Kegiatan</h5>
+        <p class="card-text">Tambah, lihat, edit, dan hapus data kegiatan OSIS.</p>
+        <a href="/kegiatan" class="btn btn-warning text-dark">Kelola Kegiatan</a>
+        <a href="/tambah_kegiatan" class="btn btn-outline-dark ms-2">Tambah Kegiatan</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Manajemen Anggota</h5>
+        <p class="card-text">Tambah, lihat, edit, dan hapus data anggota OSIS.</p>
+        <a href="/anggota" class="btn btn-warning text-dark">Kelola Anggota</a>
+        <a href="/tambah_anggota" class="btn btn-outline-dark ms-2">Tambah Anggota</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

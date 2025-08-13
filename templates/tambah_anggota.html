@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Tambah Anggota</h2>
+<form method="POST" class="card shadow-sm p-4">
+  <div class="mb-3">
+    <label class="form-label">Nama</label>
+    <input type="text" name="nama" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Jabatan</label>
+    <input type="text" name="jabatan" class="form-control" placeholder="Ketua, Wakil, Sekretaris, Bendahara, dll" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Angkatan</label>
+    <input type="text" name="angkatan" class="form-control" placeholder="2024/2025" required>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-warning text-dark">Simpan</button>
+    <a href="/anggota" class="btn btn-outline-dark">Batal</a>
+  </div>
+</form>
+{% endblock %}
