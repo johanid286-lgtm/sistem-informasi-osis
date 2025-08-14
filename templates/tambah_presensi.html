@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Tambah Presensi</h2>
+<form method="POST">
+    <label>Kegiatan:</label>
+    <select name="kegiatan_id" class="form-select mb-2">
+        {% for k in kegiatan_list %}
+        <option value="{{ k.id }}">{{ k.nama }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Anggota:</label>
+    <select name="anggota_id" class="form-select mb-2">
+        {% for a in anggota_list %}
+        <option value="{{ a.id }}">{{ a.nama }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Status:</label>
+    <select name="status" class="form-select mb-2">
+        <option value="Hadir">Hadir</option>
+        <option value="Tidak Hadir">Tidak Hadir</option>
+        <option value="Izin">Izin</option>
+    </select>
+
+    <label>Tanggal:</label>
+    <input type="date" name="tanggal" class="form-control mb-2">
+
+    <button type="submit" class="btn btn-success mt-2">Simpan Presensi</button>
+</form>
+{% endblock %}
+
+

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Daftar Presensi</h2>
+{% if presensi_list %}
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>No</th>
+            <th>Kegiatan</th>
+            <th>Anggota</th>
+            <th>Status</th>
+            <th>Tanggal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in presensi_list %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ p.nama_kegiatan }}</td>
+            <td>{{ p.nama_anggota }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.tanggal }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Belum ada presensi.</p>
+{% endif %}
+{% endblock %}
+

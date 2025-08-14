@@ -8,37 +8,38 @@ app.secret_key = "osis123"
 # Fungsi koneksi database
 def get_db():
     conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    conn.row_factory = sqlite3.Row  # supaya bisa akses pakai nama kolom
+    cur = conn.cursor()
+    return cur, conn
 
 # ------------------ HALAMAN UTAMA ------------------
-@app.route('/')
+@app.route('/home')
 def index():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM kegiatan ORDER BY tanggal DESC")
-    kegiatan_list = cursor.fetchall()
+
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    cur, conn = get_db()
+    cur.execute("SELECT * FROM kegiatan")
+    kegiatan_list = cur.fetchall()
     conn.close()
     return render_template("index.html", kegiatan=kegiatan_list)
 
 # ------------------ LOGIN ------------------
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        if username == "johan" and password == "1234":
-            session["logged_in"] = True
-            return redirect(url_for("dashboard"))
+        # Cek username & password (contoh statis)
+        if username == "johan" and password == "123":
+            session["username"] = username
+            return redirect(url_for("index"))
         else:
-            return render_template("login.html", error="Login gagal!")
-    return render_template("login.html")
+            return render_template("login.html", error="Username atau password salah")
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
+    return render_template("login.html")
 
 @app.route("/dashboard")
 def dashboard():
@@ -49,10 +50,9 @@ def dashboard():
 # ------------------ CRUD KEGIATAN ------------------
 @app.route("/kegiatan")
 def kegiatan():
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM kegiatan")
-    data = c.fetchall()
+    cur, conn = get_db()
+    cur.execute("SELECT * FROM kegiatan")
+    data = cur.fetchall()
     conn.close() 
     return render_template('kegiatan.html', kegiatan=data)
 
@@ -68,44 +68,42 @@ def manajemen_kegiatan():
     conn.close()
     return render_template('manajemen_kegiatan.html', kegiatan=kegiatan_list, enumerate=enumerate)
 
-@app.route('/tambah_kegiatan', methods=['GET', 'POST'])
+@app.route("/tambah_kegiatan", methods=["GET", "POST"])
 def tambah_kegiatan():
-    if request.method == 'POST':
+    if request.method == "POST":
         nama = request.form['nama']
-        tanggal = request.form['tanggal']
         deskripsi = request.form['deskripsi']
-
-        conn = sqlite3.connect("database.db")
-        c = conn.cursor()
-        c.execute("INSERT INTO kegiatan (nama, tanggal, deskripsi) VALUES (?, ?, ?)",
-                  (nama, tanggal, deskripsi))
+        tanggal = request.form['tanggal']
+        cur, conn = get_db()
+        cur.execute("INSERT INTO kegiatan (nama, tanggal, deskripsi) VALUES (?, ?, ?)",
+                    (nama, tanggal, deskripsi))
         conn.commit()
         conn.close()
-
-        return redirect(url_for('manajemen_kegiatan'))
-
-    return render_template('tambah_kegiatan.html')
-
+        return redirect(url_for("kegiatan"))
+    return render_template("tambah_kegiatan.html")
 
 @app.route("/edit_kegiatan/<int:id>", methods=["GET", "POST"])
 def edit_kegiatan(id):
-    conn = get_db()
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
     if request.method == "POST":
         nama = request.form["nama"]
         tanggal = request.form["tanggal"]
         deskripsi = request.form["deskripsi"]
 
-        conn.execute("UPDATE kegiatan SET nama=?, tanggal=?, deskripsi=? WHERE id=?",
+        cur.execute("UPDATE kegiatan SET nama=?, tanggal=?, deskripsi=? WHERE id=?",
                      (nama, tanggal, deskripsi, id))
         conn.commit()
         conn.close()
-        return redirect(url_for("kegiatan"))
+        return redirect(url_for("manajemen_kegiatan"))
 
-    keg = conn.execute("SELECT * FROM kegiatan WHERE id=?", (id,)).fetchone()
+    keg = cur.execute("SELECT * FROM kegiatan WHERE id=?", (id,)).fetchone()
     conn.close()
-    return render_template("edit_kegiatan.html", keg=keg)
+    return render_template("edit_kegiatan.html", kegiatan=keg)
 
-@app.route('/hapus_kegiatan/<int:id>', methods=['POST'])
+@app.route('/hapus_kegiatan/<int:id>', methods=['GET', 'POST'])
 def hapus_kegiatan(id):
     conn = sqlite3.connect('database.db')
     cur = conn.cursor()
@@ -114,55 +112,103 @@ def hapus_kegiatan(id):
     conn.close()
     return redirect(url_for('manajemen_kegiatan'))
 
+@app.route("/presensi/<int:kegiatan_id>")
+def tampil_presensi(kegiatan_id):
+    cur, conn = get_db()  # pakai get_db() agar row_factory aktif
+
+    # Ambil presensi beserta nama anggota dan nama kegiatan
+    cur.execute("""
+        SELECT p.id, k.nama AS nama_kegiatan, a.nama AS nama_anggota, p.status, p.tanggal
+        FROM presensi p
+        JOIN anggota a ON p.anggota_id = a.id
+        JOIN kegiatan k ON p.kegiatan_id = k.id
+        WHERE p.kegiatan_id = ?
+        ORDER BY p.tanggal DESC
+    """, (kegiatan_id,))
+    
+    presensi_list = cur.fetchall()
+    conn.close()
+
+    return render_template("presensi.html", presensi_list=presensi_list)
+
+# ---------------- Presensi ----------------
+@app.route("/tambah_presensi", methods=["GET", "POST"])
+def tambah_presensi():
+    cur, conn = get_db()
+    cur.execute("SELECT * FROM kegiatan")
+    kegiatan_list = cur.fetchall()
+    cur.execute("SELECT * FROM anggota")
+    anggota_list = cur.fetchall()
+    if request.method == "POST":
+        kegiatan_id = request.form['kegiatan_id']
+        anggota_id = request.form['anggota_id']
+        status = request.form['status']
+        tanggal = request.form['tanggal']
+        cur.execute("INSERT INTO presensi (kegiatan_id, anggota_id, status, tanggal) VALUES (?, ?, ?, ?)",
+                    (kegiatan_id, anggota_id, status, tanggal))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("index"))
+    conn.close()
+    return render_template("tambah_presensi.html", kegiatan_list=kegiatan_list, anggota_list=anggota_list)
+
 # ------------------ CRUD ANGGOTA ------------------
 @app.route("/anggota")
 def anggota():
-    conn = get_db()
-    anggota_list = conn.execute("SELECT * FROM anggota").fetchall()
+    cur, conn = get_db()
+    cur.execute("SELECT * FROM anggota")
+    anggota = cur.fetchall()
     conn.close()
-    return render_template("anggota.html", anggota_list=anggota_list)
+    return render_template("daftar_anggota.html", anggota=anggota)
+
 
 @app.route("/tambah_anggota", methods=["GET", "POST"])
 def tambah_anggota():
     if request.method == "POST":
-        nama = request.form["nama"]
-        jabatan = request.form["jabatan"]
-        angkatan = request.form["angkatan"]
+        nama = request.form.get("nama")
+        kelas = request.form.get("kelas")
+        jabatan = request.form.get("jabatan")
+        angkatan = request.form.get("angkatan")
 
-        conn = get_db()
-        conn.execute("INSERT INTO anggota (nama, jabatan, angkatan) VALUES (?, ?, ?)",
-                     (nama, jabatan, angkatan))
+        cur, conn = get_db()
+        cur.execute("""
+            INSERT INTO anggota (nama, kelas, jabatan, angkatan)
+            VALUES (?, ?, ?, ?)
+        """, (nama, kelas, jabatan, angkatan))
         conn.commit()
         conn.close()
+
         return redirect(url_for("anggota"))
+
     return render_template("tambah_anggota.html")
 
-@app.route("/edit_anggota/<int:id>", methods=["GET", "POST"])
-def edit_anggota(id):
-    conn = get_db()
-    if request.method == "POST":
-        nama = request.form["nama"]
-        jabatan = request.form["jabatan"]
-        angkatan = request.form["angkatan"]
-
-        conn.execute("UPDATE anggota SET nama=?, jabatan=?, angkatan=? WHERE id=?",
-                     (nama, jabatan, angkatan, id))
-        conn.commit()
-        conn.close()
-        return redirect(url_for("anggota"))
-
-    agt = conn.execute("SELECT * FROM anggota WHERE id=?", (id,)).fetchone()
-    conn.close()
-    return render_template("edit_anggota.html", agt=agt)
-
-
-@app.route("/hapus_anggota/<int:id>")
+@app.route('/hapus_anggota/<int:id>', methods=['POST'])
 def hapus_anggota(id):
-    conn = get_db()
-    conn.execute("DELETE FROM anggota WHERE id=?", (id,))
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("DELETE FROM anggota WHERE id=?", (id,))
     conn.commit()
     conn.close()
-    return redirect(url_for("anggota"))
+    return redirect(url_for('anggota'))
+
+@app.route("/presensi")
+def tampil_semua_presensi():
+    cur, conn = get_db()
+    cur.execute("""
+        SELECT p.id, k.nama AS nama_kegiatan, a.nama AS nama_anggota, p.status, p.tanggal
+        FROM presensi p
+        JOIN kegiatan k ON p.kegiatan_id = k.id
+        JOIN anggota a ON p.anggota_id = a.id
+        ORDER BY p.tanggal DESC
+    """)
+    presensi_list = cur.fetchall()
+    conn.close()
+    return render_template("presensi.html", presensi_list=presensi_list)
+
+@app.route("/logout")
+def logout():
+    session.pop("username", None)
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    app.run(debug=True,port=5019)
+    app.run(debug=True,port=5035)
